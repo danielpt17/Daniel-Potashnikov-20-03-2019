@@ -1,0 +1,17 @@
+.favorites-container {
+  display: flex;
+  height: 1000px;
+  width: 100%;
+  padding: 20px;
+  flex-direction: row;
+  .weather-card{
+    width: 10%;
+    height: 185px;
+    justify-content: space-evenly;
+    border: 1px solid ;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+  }
+}

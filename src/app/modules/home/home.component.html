@@ -1,0 +1,42 @@
+<div class="home-container">
+  <div class="search-line-container">
+    <form class="search-form">
+      <img class="search-image" src="../../../assets/images/png/search-icon.png">
+      <mat-form-field class="field">
+        <input type="text" matInput [formControl]="searchLineControl"
+               [matAutocomplete]="auto">
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onLocationSelected($event.option.value)">
+          <mat-option *ngFor="let location of locations" [value]="location">
+            {{ location.name }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </form>
+  </div>
+  <div class="weather-container">
+    <div class="current-weather-container">
+      <div class="upper-current-weather">
+        <div class="city-details-container">
+          <span class="text h6 ellipsis bold">{{selectedLocationWeather?.name}}</span>
+          <span
+            class="text h6 ellipsis bold">{{selectedLocationWeather?.temperature?.metric?.value}} {{selectedLocationWeather?.temperature?.metric.unit}} </span>
+        </div>
+        <div class="favorites">
+          <div class="fav-button" [ngClass]="{clicked: selectedLocation?.inFavorites}" *ngIf="selectedLocation"
+               (click)="onFavoriteClick()"></div>
+        </div>
+      </div>
+      <div class="bottom-current-weather">
+        <span class="text h3 ellipsis bold">{{selectedLocationWeather?.weatherText}}</span>
+      </div>
+    </div>
+    <div class="next-days-weather-container">
+      <div class="weather-card" *ngFor="let card of locationWeatherForecast">
+        <span class="text h6 ellipsis bold">{{card?.date | date: 'EEEE' }}</span>
+        <span class="text h6 ellipsis bold"> {{card?.temperature?.metric.value}}</span>
+        <span class="text h6 ellipsis bold"> {{card?.temperature?.metric.unit}}</span>
+      </div>
+    </div>
+
+  </div>
+</div>
