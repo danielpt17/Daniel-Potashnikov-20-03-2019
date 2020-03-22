@@ -21,9 +21,9 @@
           <span
             class="text h6 ellipsis bold">{{selectedLocationWeather?.temperature?.metric?.value}} {{selectedLocationWeather?.temperature?.metric.unit}} </span>
         </div>
-        <div class="favorites">
+        <div class="favorites" [appTooltip]="favoritesTooltipString">
           <div class="fav-button" [ngClass]="{clicked: selectedLocation?.inFavorites}" *ngIf="selectedLocation"
-               (click)="onFavoriteClick()"></div>
+               (click)="onFavoriteClick()" ></div>
         </div>
       </div>
       <div class="bottom-current-weather">
@@ -37,6 +37,6 @@
         <span class="text h6 ellipsis bold"> {{card?.temperature?.metric.unit}}</span>
       </div>
     </div>
-
+    <ngx-ui-loader></ngx-ui-loader>
   </div>
 </div>

@@ -13,6 +13,7 @@
     .search-form {
       .search-image {
         margin-bottom: -10px;
+        cursor: pointer;
       }
 
       .field {
@@ -87,6 +88,15 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        width:10%;
+        height: 175px;
+        justify-content: space-around;
+        border: 1px solid;
+
+        span {
+          text-align: center;
+          width: 88%;
+        }
       }
     }
   }

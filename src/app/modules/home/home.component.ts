@@ -8,6 +8,8 @@ import {FavoritesService} from '../../core/services/favorites.service';
 import {ToastrService} from 'ngx-toastr';
 import {Weather} from './models/weather';
 import {forkJoin, Observable} from 'rxjs';
+import {NgxUiLoaderService} from 'ngx-ui-loader';
+import {FavoritesTooltipMessageEnum} from './enums/favorites-tooltip-message.enum';
 
 @Component({
   selector: 'app-home',
@@ -22,37 +24,44 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
   selectedLocationWeather: Weather;
   locationWeatherForecast: Weather[];
   defaultSearchLocationKey: string = '215854';
+  ERROR_MESSAGE: string = 'Oops something wrong happened. Please try again:)';
+  INPUT_ERROR_MESSAGE: string = 'No special characters or numbers allowed';
+  DEFAULT_CITY_NAME: string = 'Tel Aviv';
+  favoritesTooltipString: string;
 
   constructor(private readonly homeService: HomeService,
               private readonly favoritesService: FavoritesService,
               private readonly cdr: ChangeDetectorRef,
-              private readonly toastr: ToastrService
+              private readonly toastr: ToastrService,
+              private readonly ngxLoader: NgxUiLoaderService
   ) {
     super();
   }
 
   ngOnInit() {
     super.ngOnInit();
+    this.ngxLoader.start();
     if (history.state.data) {
-      console.log(history.state.data)
       this.selectedLocation = history.state.data;
-    //  this.subscribeToLocationChanges();
+      //  this.subscribeToLocationChanges();
     } else {
-   //   this.setLocationByDefault();
+      this.setLocationByDefault();
     }
-   // this.subscribeToSearchLineControl();
+    // this.subscribeToSearchLineControl();
   }
 
   private subscribeToLocationChanges(): void {
-    console.log(this.selectedLocation.key)
+    console.log(this.selectedLocation.key);
     this.subscribeToWeatherData(this.selectedLocation.key).subscribe((result) => {
       if (Array.isArray(result) && result.length > 1) {
         this.selectedLocationWeather = result[0][0];
         this.selectedLocationWeather.name = this.selectedLocation.name;
         this.locationWeatherForecast = result[1];
+        this.ngxLoader.stop();
         this.cdr.detectChanges();
       } else {
-        this.toastr.error('Oops something wrong happened. Please try again:)');
+        this.ngxLoader.start();
+        this.toastr.error(this.ERROR_MESSAGE);
       }
     });
   }
@@ -69,14 +78,16 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
   private setLocationByDefault(): void {
     this.subscribeToWeatherData(this.defaultSearchLocationKey).subscribe((result) => {
       if (Array.isArray(result) && result.length) {
-        this.selectedLocation = {key: this.defaultSearchLocationKey, name: 'Tel Aviv'};
-        this.selectedLocation.inFavorites = this.favoritesService.checkIfInFavorites(this.defaultSearchLocationKey);
+        this.selectedLocation = {key: this.defaultSearchLocationKey, name: this.DEFAULT_CITY_NAME};
+        this.checkSelectedLocationFavoritesStatus();
         this.selectedLocationWeather = result[0][0];
-        this.selectedLocationWeather.name = 'Tel Aviv';
+        this.selectedLocationWeather.name = this.DEFAULT_CITY_NAME;
         this.locationWeatherForecast = result[1];
+        this.ngxLoader.stop();
         this.cdr.detectChanges();
       } else {
-        this.toastr.error('Oops something wrong happened. Please try again:)');
+        this.ngxLoader.start();
+        this.toastr.error(this.ERROR_MESSAGE);
       }
     });
   }
@@ -85,8 +96,10 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
     this.selectedLocation.inFavorites = !this.selectedLocation.inFavorites;
     if (this.selectedLocation.inFavorites) {
       this.favoritesService.setFavoriteLocation(this.selectedLocation);
+      this.favoritesTooltipString = FavoritesTooltipMessageEnum.REMOVE;
     } else {
       this.favoritesService.removeFromFavorites(this.selectedLocation);
+      this.favoritesTooltipString = FavoritesTooltipMessageEnum.ADD;
     }
   }
 
@@ -103,7 +116,7 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
             // });
           } else {
             if (val != null) {
-              this.toastr.error('No special characters or numbers allowed');
+              this.toastr.error(this.INPUT_ERROR_MESSAGE);
             }
           }
         })
@@ -114,11 +127,26 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
   public onLocationSelected(location: Location): void {
     this.subscribeToWeatherData(location.key).subscribe((result) => {
       if (result.length) {
+        this.selectedLocation = location;
+        this.checkSelectedLocationFavoritesStatus();
         this.selectedLocationWeather = result[0][0];
         this.selectedLocationWeather.name = location.name;
         this.locationWeatherForecast = result[1];
         this.cdr.detectChanges();
+        this.ngxLoader.stop();
+      } else {
+        this.ngxLoader.start();
+        this.toastr.error(this.ERROR_MESSAGE);
       }
     });
+  }
+
+  private checkSelectedLocationFavoritesStatus(): void {
+    this.selectedLocation.inFavorites = this.favoritesService.checkIfInFavorites(this.defaultSearchLocationKey);
+    if (this.selectedLocation.inFavorites) {
+      this.favoritesTooltipString = FavoritesTooltipMessageEnum.REMOVE;
+    } else {
+      this.favoritesTooltipString = FavoritesTooltipMessageEnum.ADD;
+    }
   }
 }

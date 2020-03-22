@@ -31,7 +31,7 @@ export class TooltipDirective extends ObservableSubscriptionComponent implements
       originY: TooltipEnum.CENTER,
       overlayX: TooltipEnum.START,
       overlayY: TooltipEnum.CENTER,
-      offsetX: 4
+      offsetY: 20
     }];
     const positionStrategy = this.overlayPositionBuilder
       .flexibleConnectedTo(this.elementRef)

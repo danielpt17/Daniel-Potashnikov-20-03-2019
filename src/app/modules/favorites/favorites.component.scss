@@ -4,14 +4,20 @@
   width: 100%;
   padding: 20px;
   flex-direction: row;
-  .weather-card{
+
+  .weather-card {
     width: 10%;
     height: 185px;
-    justify-content: space-evenly;
-    border: 1px solid ;
+    margin: 0 2%;
+    justify-content: space-;
+    border: 1px solid;
     display: flex;
     flex-direction: column;
     align-items: center;
     cursor: pointer;
+
+    span {
+      width: 88%;
+    }
   }
 }

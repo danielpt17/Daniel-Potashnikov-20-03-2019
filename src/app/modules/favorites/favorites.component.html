@@ -1,7 +1,8 @@
 <div class="favorites-container">
-  <div class="weather-card" *ngFor="let card of favoritesCurrentWeather" [routerLink]="['/']" [state]="{data:card}">
+  <div class="weather-card" *ngFor="let card of favoritesCurrentWeather" [routerLink]="['/']" [state]="{data:card}" [appTooltip]="CLICK_FOR_DETAILS">
     <span class="text h6 ellipsis bold">{{card?.name}}</span>
-    <span class="text h6 ellipsis bold"> {{card?.temperature.metric.value}}</span>
+    <span class="text h6 ellipsis bold"> {{card?.temperature?.metric?.value}}  {{card?.temperature?.metric?.unit}}</span>
     <span class="text h6 ellipsis bold">{{card?.weatherText}}</span>
   </div>
+  <ngx-ui-loader></ngx-ui-loader>
 </div>

@@ -5,6 +5,8 @@ import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocompleteModule, MatFormFieldModule, MatInputModule} from '@angular/material';
 import {HomeService} from './services/home.service';
+import {SharedModule} from '../../shared/shared.module';
+import {NgxUiLoaderModule} from 'ngx-ui-loader';
 
 @NgModule({
   declarations: [
@@ -21,6 +23,8 @@ import {HomeService} from './services/home.service';
     MatInputModule,
     MatFormFieldModule,
     ReactiveFormsModule,
+    SharedModule,
+    NgxUiLoaderModule
 
   ],
   exports: []
