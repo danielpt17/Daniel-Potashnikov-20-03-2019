@@ -12,11 +12,11 @@ const API_KEY = '82h1TppjYMnYsseVDPIzmJhpJbMlM8G9';
 @Injectable()
 export class ApiService {
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
   ) {
   }
 
-  public getLocationsAutoComplete(queryParams: QueryParams): Observable<any> {
+  getLocationsAutoComplete(queryParams: QueryParams): Observable<any> {
     return this.http
       .get(`${API_URL}/locations/v1/cities/autocomplete`, {
         params: {
@@ -31,7 +31,7 @@ export class ApiService {
       );
   }
 
-  public getCurrentWeather(queryParams: QueryParams): Observable<any> {
+  getCurrentWeather(queryParams: QueryParams): Observable<any> {
     return this.http
       .get(`${API_URL}/currentconditions/v1/${queryParams.locationKey}`, {
         params: {
@@ -45,7 +45,22 @@ export class ApiService {
       );
   }
 
-  public getNextDaysWeather(queryParams: QueryParams): Observable<any> {
+  getWeatherByGeoPosition(queryParams: QueryParams): Observable<any> {
+    return this.http
+      .get(`${API_URL}/locations/v1/cities/geoposition/search`, {
+        params: {
+          apikey: API_KEY,
+          q: queryParams.q
+        }
+      }).pipe(
+        map((response) => {
+          return response;
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  getNextDaysWeather(queryParams: QueryParams): Observable<any> {
     return this.http
       .get(`${API_URL}/forecasts/v1/daily/5day/${queryParams.locationKey}`, {
         params: {

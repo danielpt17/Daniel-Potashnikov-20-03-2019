@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@an
 import {ObservableSubscriptionComponent} from '../../utils/observable-subscription-component.util';
 import {FormControl} from '@angular/forms';
 import {HomeService} from './services/home.service';
-import {debounceTime, startWith, takeUntil, tap} from 'rxjs/operators';
+import {debounceTime, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 import {Location} from './models/location';
 import {FavoritesService} from '../../core/services/favorites.service';
 import {ToastrService} from 'ngx-toastr';
@@ -20,13 +20,16 @@ import {FavoritesTooltipMessageEnum} from './enums/favorites-tooltip-message.enu
 export class HomeComponent extends ObservableSubscriptionComponent implements OnInit {
   searchLineControl: FormControl = new FormControl();
   locations: Location[];
+  lat: number;
+  lon: number;
   selectedLocation: Location;
   selectedLocationWeather: Weather;
   locationWeatherForecast: Weather[];
   defaultSearchLocationKey: string = '215854';
-  ERROR_MESSAGE: string = 'Oops something wrong happened. Please try again:)';
+  GENERAL_ERROR_MESSAGE: string = 'Oops something wrong happened. Please try again:)';
   INPUT_ERROR_MESSAGE: string = 'No special characters or numbers allowed';
   DEFAULT_CITY_NAME: string = 'Tel Aviv';
+  NAVIGATOR_ERROR: string = 'Geolocation is not supported by your browser';
   favoritesTooltipString: string;
 
   constructor(private readonly homeService: HomeService,
@@ -41,29 +44,46 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
   ngOnInit() {
     super.ngOnInit();
     this.ngxLoader.start();
-    if (history.state.data) {
-      this.selectedLocation = history.state.data;
-      //  this.subscribeToLocationChanges();
-    } else {
-      this.setLocationByDefault();
+    this.setGeoLocations();
+    this.subscribeToSearchLineControl();
+  }
+
+  private setGeoLocations(): void {
+    if (!navigator || !navigator.geolocation) {
+      this.toastr.error(this.NAVIGATOR_ERROR);
     }
-    // this.subscribeToSearchLineControl();
+    navigator.geolocation.getCurrentPosition((position) => {
+      this.lat = position.coords.latitude;
+      this.lon = position.coords.longitude;
+      if (history.state.data) {
+        this.selectedLocation = history.state.data;
+        this.selectedLocation.inFavorites=true;
+        this.subscribeToLocationChanges();
+      } else {
+        this.setLocationByDefault();
+      }
+    });
   }
 
   private subscribeToLocationChanges(): void {
-    console.log(this.selectedLocation.key);
-    this.subscribeToWeatherData(this.selectedLocation.key).subscribe((result) => {
-      if (Array.isArray(result) && result.length > 1) {
-        this.selectedLocationWeather = result[0][0];
-        this.selectedLocationWeather.name = this.selectedLocation.name;
-        this.locationWeatherForecast = result[1];
-        this.ngxLoader.stop();
-        this.cdr.detectChanges();
-      } else {
-        this.ngxLoader.start();
-        this.toastr.error(this.ERROR_MESSAGE);
-      }
-    });
+    this.subscribeToWeatherData(this.selectedLocation.key)
+      .subscribe(
+        result => {
+          if (Array.isArray(result) && result.length > 1) {
+            this.selectedLocationWeather = result[0][0];
+            this.selectedLocationWeather.name = this.selectedLocation.name;
+            this.locationWeatherForecast = result[1];
+            this.ngxLoader.stop();
+            this.cdr.detectChanges();
+          } else {
+            this.ngxLoader.start();
+            this.toastr.error(this.GENERAL_ERROR_MESSAGE);
+          }
+        },
+        error => {
+          this.toastr.error(error);
+        }
+      );
   }
 
   private subscribeToWeatherData(locationKey: string): Observable<any[]> {
@@ -75,21 +95,34 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
     );
   }
 
-  private setLocationByDefault(): void {
-    this.subscribeToWeatherData(this.defaultSearchLocationKey).subscribe((result) => {
-      if (Array.isArray(result) && result.length) {
-        this.selectedLocation = {key: this.defaultSearchLocationKey, name: this.DEFAULT_CITY_NAME};
-        this.checkSelectedLocationFavoritesStatus();
-        this.selectedLocationWeather = result[0][0];
-        this.selectedLocationWeather.name = this.DEFAULT_CITY_NAME;
-        this.locationWeatherForecast = result[1];
-        this.ngxLoader.stop();
-        this.cdr.detectChanges();
-      } else {
-        this.ngxLoader.start();
-        this.toastr.error(this.ERROR_MESSAGE);
-      }
-    });
+  private setLocationByDefault() {
+    this.homeService.getGeoLocaiton({q: `${this.lat},${this.lon}`})
+      .pipe(
+        take(1),
+        tap((locations: Location[]) => {
+          this.selectedLocation = locations[0];
+        }),
+        switchMap((locations: Location[]) => {
+          console.log(locations[0]);
+          return this.subscribeToWeatherData(locations[0].key);
+        })
+      ).subscribe(
+      (result) => {
+        if (Array.isArray(result) && result.length) {
+          this.checkSelectedLocationFavoritesStatus();
+          this.selectedLocationWeather = result[0][0];
+          this.selectedLocationWeather.name = this.selectedLocation.name;
+          this.locationWeatherForecast = result[1];
+          this.ngxLoader.stop();
+          this.cdr.detectChanges();
+        } else {
+          this.ngxLoader.start();
+          this.toastr.error(this.GENERAL_ERROR_MESSAGE);
+        }
+      },
+      (error) => {
+        this.toastr.error(error);
+      });
   }
 
   public onFavoriteClick(): void {
@@ -110,12 +143,14 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
         startWith(null),
         debounceTime(400),
         tap((val: string) => {
-          if (val && (typeof val === 'string') && /^[A-Z]+$/i.test(val)) {
-            // //this.homeService.getLocationsAutoComplete({q: val}).then((locations: Location[]) => {
-            //   this.locations = locations;
-            // });
+          if (val && (typeof val === 'string') && /^[a-zA-Z ]+$/i.test(val)) {
+            this.homeService.getLocationsAutoComplete({q: val}).then((locations: Location[]) => {
+              this.locations = locations;
+            }).catch(error => {
+              this.toastr.error(error);
+            });
           } else {
-            if (val != null) {
+            if (val !== null && typeof val !== 'object' && val.length > 0) {
               this.toastr.error(this.INPUT_ERROR_MESSAGE);
             }
           }
@@ -124,21 +159,32 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
       .subscribe();
   }
 
+  getOptionText(option): string {
+    if (option) {
+      return option.name;
+    }
+  }
+
   public onLocationSelected(location: Location): void {
-    this.subscribeToWeatherData(location.key).subscribe((result) => {
-      if (result.length) {
-        this.selectedLocation = location;
-        this.checkSelectedLocationFavoritesStatus();
-        this.selectedLocationWeather = result[0][0];
-        this.selectedLocationWeather.name = location.name;
-        this.locationWeatherForecast = result[1];
-        this.cdr.detectChanges();
-        this.ngxLoader.stop();
-      } else {
-        this.ngxLoader.start();
-        this.toastr.error(this.ERROR_MESSAGE);
-      }
-    });
+    this.subscribeToWeatherData(location.key)
+      .subscribe(
+        (result) => {
+          if (result.length) {
+            this.selectedLocation = location;
+            this.checkSelectedLocationFavoritesStatus();
+            this.selectedLocationWeather = result[0][0];
+            this.selectedLocationWeather.name = location.name;
+            this.locationWeatherForecast = result[1];
+            this.cdr.detectChanges();
+            this.ngxLoader.stop();
+          } else {
+            this.ngxLoader.start();
+            this.toastr.error(this.GENERAL_ERROR_MESSAGE);
+          }
+        },
+        (error) => {
+          this.toastr.error(error);
+        });
   }
 
   private checkSelectedLocationFavoritesStatus(): void {
@@ -150,3 +196,4 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
     }
   }
 }
+

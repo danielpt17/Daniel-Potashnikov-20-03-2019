@@ -5,7 +5,8 @@
       <mat-form-field class="field">
         <input type="text" matInput [formControl]="searchLineControl"
                [matAutocomplete]="auto">
-        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onLocationSelected($event.option.value)">
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onLocationSelected($event.option.value)"
+                          [displayWith]="getOptionText">
           <mat-option *ngFor="let location of locations" [value]="location">
             {{ location.name }}
           </mat-option>
@@ -21,9 +22,9 @@
           <span
             class="text h6 ellipsis bold">{{selectedLocationWeather?.temperature?.metric?.value}} {{selectedLocationWeather?.temperature?.metric.unit}} </span>
         </div>
-        <div class="favorites" [appTooltip]="favoritesTooltipString">
+        <div class="favorites" matTooltip="favoritesTooltipString">
           <div class="fav-button" [ngClass]="{clicked: selectedLocation?.inFavorites}" *ngIf="selectedLocation"
-               (click)="onFavoriteClick()" ></div>
+               (click)="onFavoriteClick()"></div>
         </div>
       </div>
       <div class="bottom-current-weather">

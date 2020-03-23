@@ -5,6 +5,7 @@ import {Location} from '../home/models/location';
 import {takeUntil} from 'rxjs/operators';
 import {Weather} from '../home/models/weather';
 import {NgxUiLoaderService} from 'ngx-ui-loader';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-favorites',
@@ -20,6 +21,7 @@ export class FavoritesComponent extends ObservableSubscriptionComponent implemen
 
   constructor(private readonly favoritesService: FavoritesService,
               private readonly cdr: ChangeDetectorRef,
+              private readonly toastr: ToastrService,
               private readonly ngxLoader: NgxUiLoaderService) {
     super();
   }
@@ -28,7 +30,12 @@ export class FavoritesComponent extends ObservableSubscriptionComponent implemen
     super.ngOnInit();
     this.ngxLoader.start();
     this.favoriteLocations = this.favoritesService.getFavoriteLocations();
-    this.subscribeToFavoritesCurrentWeather();
+    if (this.favoriteLocations.length) {
+      this.subscribeToFavoritesCurrentWeather();
+    } else {
+      this.ngxLoader.stop();
+      this.toastr.show('No favorites yet. Please set location as bookmark at first');
+    }
   }
 
 
@@ -36,14 +43,19 @@ export class FavoritesComponent extends ObservableSubscriptionComponent implemen
     this.favoritesService.getFavoritesCurrentWeather(this.favoriteLocations)
       .pipe(
         takeUntil(this.observableUnsubscriber)
-      ).subscribe((favoritesCurrentWeather: Weather[]) => {
-      this.favoritesCurrentWeather = favoritesCurrentWeather;
-      for (let i = 0; i < this.favoriteLocations.length; i++) {
-        this.favoritesCurrentWeather[i].name = this.favoriteLocations[i].name;
-        this.favoritesCurrentWeather[i].key = this.favoriteLocations[i].key;
-      }
-      this.ngxLoader.stop();
-      this.cdr.detectChanges();
-    });
+      )
+      .subscribe(
+        (favoritesCurrentWeather: Weather[]) => {
+          this.favoritesCurrentWeather = favoritesCurrentWeather;
+          for (let i = 0; i < this.favoriteLocations.length; i++) {
+            this.favoritesCurrentWeather[i].name = this.favoriteLocations[i].name;
+            this.favoritesCurrentWeather[i].key = this.favoriteLocations[i].key;
+          }
+          this.ngxLoader.stop();
+          this.cdr.detectChanges();
+        },
+        (error) => {
+          this.toastr.error(error);
+        });
   }
 }

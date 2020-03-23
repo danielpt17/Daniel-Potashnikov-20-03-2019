@@ -3,9 +3,8 @@ import {HomeComponent} from './home.component';
 import {HomeRoutingModule} from './home-routing.module';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatAutocompleteModule, MatFormFieldModule, MatInputModule} from '@angular/material';
+import {MatAutocompleteModule, MatFormFieldModule, MatInputModule, MatTooltipModule} from '@angular/material';
 import {HomeService} from './services/home.service';
-import {SharedModule} from '../../shared/shared.module';
 import {NgxUiLoaderModule} from 'ngx-ui-loader';
 
 @NgModule({
@@ -23,8 +22,7 @@ import {NgxUiLoaderModule} from 'ngx-ui-loader';
     MatInputModule,
     MatFormFieldModule,
     ReactiveFormsModule,
-    SharedModule,
-    NgxUiLoaderModule
+    NgxUiLoaderModule,
 
   ],
   exports: []

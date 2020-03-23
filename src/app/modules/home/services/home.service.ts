@@ -38,6 +38,17 @@ export class HomeService {
       );
   }
 
+  getGeoLocaiton(queryParams: QueryParams): Observable<Location[]> {
+    return this.apiService.getWeatherByGeoPosition(queryParams)
+      .pipe(
+        map(
+          (response: any) => {
+            return LocationsTransformer.transformResponse(response);
+          }
+        )
+      );
+  }
+
   getNextDaysWeather(queryParams: QueryParams): Observable<Weather[]> {
     return this.apiService.getNextDaysWeather(queryParams)
       .pipe(
