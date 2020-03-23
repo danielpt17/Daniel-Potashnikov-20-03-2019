@@ -9,7 +9,6 @@ import {ToastrService} from 'ngx-toastr';
 import {Weather} from './models/weather';
 import {forkJoin, Observable} from 'rxjs';
 import {NgxUiLoaderService} from 'ngx-ui-loader';
-import {FavoritesTooltipMessageEnum} from './enums/favorites-tooltip-message.enum';
 
 @Component({
   selector: 'app-home',
@@ -25,10 +24,8 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
   selectedLocation: Location;
   selectedLocationWeather: Weather;
   locationWeatherForecast: Weather[];
-  defaultSearchLocationKey: string = '215854';
   GENERAL_ERROR_MESSAGE: string = 'Oops something wrong happened. Please try again:)';
   INPUT_ERROR_MESSAGE: string = 'No special characters or numbers allowed';
-  DEFAULT_CITY_NAME: string = 'Tel Aviv';
   NAVIGATOR_ERROR: string = 'Geolocation is not supported by your browser';
   favoritesTooltipString: string;
 
@@ -57,7 +54,7 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
       this.lon = position.coords.longitude;
       if (history.state.data) {
         this.selectedLocation = history.state.data;
-        this.selectedLocation.inFavorites=true;
+        this.selectedLocation.inFavorites = true;
         this.subscribeToLocationChanges();
       } else {
         this.setLocationByDefault();
@@ -70,6 +67,7 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
       .subscribe(
         result => {
           if (Array.isArray(result) && result.length > 1) {
+            this.selectedLocation.inFavorites = this.favoritesService.checkIfInFavorites(this.selectedLocation.key);
             this.selectedLocationWeather = result[0][0];
             this.selectedLocationWeather.name = this.selectedLocation.name;
             this.locationWeatherForecast = result[1];
@@ -82,6 +80,7 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
         },
         error => {
           this.toastr.error(error);
+          this.ngxLoader.stop();
         }
       );
   }
@@ -103,15 +102,14 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
           this.selectedLocation = locations[0];
         }),
         switchMap((locations: Location[]) => {
-          console.log(locations[0]);
           return this.subscribeToWeatherData(locations[0].key);
         })
       ).subscribe(
       (result) => {
         if (Array.isArray(result) && result.length) {
-          this.checkSelectedLocationFavoritesStatus();
           this.selectedLocationWeather = result[0][0];
           this.selectedLocationWeather.name = this.selectedLocation.name;
+          this.selectedLocation.inFavorites = this.favoritesService.checkIfInFavorites(this.selectedLocation.key);
           this.locationWeatherForecast = result[1];
           this.ngxLoader.stop();
           this.cdr.detectChanges();
@@ -122,6 +120,7 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
       },
       (error) => {
         this.toastr.error(error);
+        this.ngxLoader.stop();
       });
   }
 
@@ -129,10 +128,8 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
     this.selectedLocation.inFavorites = !this.selectedLocation.inFavorites;
     if (this.selectedLocation.inFavorites) {
       this.favoritesService.setFavoriteLocation(this.selectedLocation);
-      this.favoritesTooltipString = FavoritesTooltipMessageEnum.REMOVE;
     } else {
       this.favoritesService.removeFromFavorites(this.selectedLocation);
-      this.favoritesTooltipString = FavoritesTooltipMessageEnum.ADD;
     }
   }
 
@@ -171,7 +168,7 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
         (result) => {
           if (result.length) {
             this.selectedLocation = location;
-            this.checkSelectedLocationFavoritesStatus();
+            this.selectedLocation.inFavorites = this.favoritesService.checkIfInFavorites(this.selectedLocation.key);
             this.selectedLocationWeather = result[0][0];
             this.selectedLocationWeather.name = location.name;
             this.locationWeatherForecast = result[1];
@@ -184,16 +181,10 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
         },
         (error) => {
           this.toastr.error(error);
+          this.ngxLoader.stop();
         });
   }
 
-  private checkSelectedLocationFavoritesStatus(): void {
-    this.selectedLocation.inFavorites = this.favoritesService.checkIfInFavorites(this.defaultSearchLocationKey);
-    if (this.selectedLocation.inFavorites) {
-      this.favoritesTooltipString = FavoritesTooltipMessageEnum.REMOVE;
-    } else {
-      this.favoritesTooltipString = FavoritesTooltipMessageEnum.ADD;
-    }
-  }
+
 }
 

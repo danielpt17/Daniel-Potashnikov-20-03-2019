@@ -20,9 +20,10 @@
         <div class="city-details-container">
           <span class="text h6 ellipsis bold">{{selectedLocationWeather?.name}}</span>
           <span
-            class="text h6 ellipsis bold">{{selectedLocationWeather?.temperature?.metric?.value}} {{selectedLocationWeather?.temperature?.metric.unit}} </span>
+            class="text h6 ellipsis bold">{{selectedLocationWeather?.temperature?.metric?.value}}
+            °{{selectedLocationWeather?.temperature?.metric.unit}} </span>
         </div>
-        <div class="favorites" matTooltip="favoritesTooltipString">
+        <div class="favorites">
           <div class="fav-button" [ngClass]="{clicked: selectedLocation?.inFavorites}" *ngIf="selectedLocation"
                (click)="onFavoriteClick()"></div>
         </div>
@@ -35,7 +36,7 @@
       <div class="weather-card" *ngFor="let card of locationWeatherForecast">
         <span class="text h6 ellipsis bold">{{card?.date | date: 'EEEE' }}</span>
         <span class="text h6 ellipsis bold"> {{card?.temperature?.metric.value}}</span>
-        <span class="text h6 ellipsis bold"> {{card?.temperature?.metric.unit}}</span>
+        <span class="text h6 ellipsis bold"> °{{card?.temperature?.metric.unit}}</span>
       </div>
     </div>
     <ngx-ui-loader></ngx-ui-loader>

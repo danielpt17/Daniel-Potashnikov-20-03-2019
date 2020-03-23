@@ -38,7 +38,6 @@ export class FavoritesService {
         favoriteLocationArray = favoriteLocationArray.filter((location: Location) => {
           return location.key !== favoriteLocation.key;
         });
-        console.log(favoriteLocationArray);
         localStorage.setItem('favorites', JSON.stringify(favoriteLocationArray));
       }
     } catch (err) {

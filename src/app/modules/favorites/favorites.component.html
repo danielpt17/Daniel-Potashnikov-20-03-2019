@@ -2,7 +2,7 @@
   <div class="weather-card" *ngFor="let card of favoritesCurrentWeather" [routerLink]="['/']" [state]="{data:card}">
     <span class="text h6 ellipsis bold">{{card?.name}}</span>
     <span
-      class="text h6 ellipsis bold"> {{card?.temperature?.metric?.value}}  {{card?.temperature?.metric?.unit}}</span>
+      class="text h6 ellipsis bold"> {{card?.temperature?.metric?.value}}  °{{card?.temperature?.metric?.unit}}</span>
     <span class="text h6 ellipsis bold">{{card?.weatherText}}</span>
   </div>
   <ngx-ui-loader></ngx-ui-loader>

@@ -8,7 +8,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {CoreModule} from './core/core.module';
 import {ToastrModule} from 'ngx-toastr';
 import {OverlayModule} from '@angular/cdk/overlay';
-
+import { MatTooltipModule } from '@angular/material/tooltip';
 @NgModule({
   declarations: [
     AppComponent
@@ -21,6 +21,7 @@ import {OverlayModule} from '@angular/cdk/overlay';
     CoreModule,
     NgxUiLoaderModule,
     ToastrModule.forRoot({preventDuplicates: true}),
+    MatTooltipModule,
     OverlayModule
   ],
   providers: [],
