@@ -20,7 +20,7 @@ export class FavoritesService {
       if (!favoriteLocationArray || !favoriteLocationArray.length) {
         favoriteLocationArray = [favoriteLocation];
       } else {
-        if (this.checkIfInFavorites(favoriteLocation.key)) {
+        if (!this.checkIfInFavorites(favoriteLocation.key)) {
           favoriteLocationArray.push(favoriteLocation);
         }
       }

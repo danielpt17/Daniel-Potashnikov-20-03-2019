@@ -141,7 +141,9 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
         debounceTime(400),
         tap((val: string) => {
           if (val && (typeof val === 'string') && /^[a-zA-Z ]+$/i.test(val)) {
+            this.ngxLoader.start();
             this.homeService.getLocationsAutoComplete({q: val}).then((locations: Location[]) => {
+              this.ngxLoader.stop();
               this.locations = locations;
             }).catch(error => {
               this.toastr.error(error);
