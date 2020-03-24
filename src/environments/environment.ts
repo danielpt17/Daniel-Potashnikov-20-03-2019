@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://dataservice.accuweather.com'
+  apiUrl: 'https://dataservice.accuweather.com'
 };
 
 /*
