@@ -5,6 +5,7 @@ import {map} from 'rxjs/operators';
 import {catchError} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
 import {QueryParams} from '../../modules/home/models/query-params';
+import {throwError} from 'rxjs';
 
 const API_URL = environment.apiUrl;
 const API_KEY = '82h1TppjYMnYsseVDPIzmJhpJbMlM8G9';
@@ -77,7 +78,7 @@ export class ApiService {
 
   private handleError(error: Response | any) {
     console.error('ApiService::handleError', error);
-    return Observable.throw(error);
+    return throwError(error);
   }
 
 

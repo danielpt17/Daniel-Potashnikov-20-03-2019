@@ -79,7 +79,7 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
           }
         },
         error => {
-          this.toastr.error(error);
+          this.toastr.error(error.message);
           this.ngxLoader.stop();
         }
       );
@@ -119,7 +119,7 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
         }
       },
       (error) => {
-        this.toastr.error(error);
+        this.toastr.error(error.message);
         this.ngxLoader.stop();
       });
   }
@@ -182,7 +182,7 @@ export class HomeComponent extends ObservableSubscriptionComponent implements On
           }
         },
         (error) => {
-          this.toastr.error(error);
+          this.toastr.error(error.message);
           this.ngxLoader.stop();
         });
   }
