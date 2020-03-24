@@ -6,6 +6,15 @@ app.use(express.static(__dirname + '/dist/my-weather-app'));
 
 app.listen(process.env.PORT || 8080);
 
+
+app.use(function (req, res, next){
+  if (req.headers['x-forwarded-proto'] === 'https') {
+    res.redirect('http://' + req.hostname + req.url);
+  } else {
+    next();
+  }
+});
+
 //PathLocationStrategy
 app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname + '/dist/my-weather-app/index.html'));
